@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 
 class Page(models.Model):
@@ -76,3 +78,56 @@ class PageVersion(models.Model):
 
     def __str__(self):
         return f"{self.page.title} - Version {self.version_number}"
+
+
+class PagePermission(models.Model):
+    """
+    Defines who has access to a specific page and what they can do.
+    """
+
+    class PermissionLevel(models.TextChoices):
+        VIEW = "view", _("View")
+        EDIT = "edit", _("Edit")
+        ADMIN = "admin", _("Admin")
+
+    page = models.ForeignKey(
+        "pages.Page",
+        on_delete=models.CASCADE,
+        related_name="permissions",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="page_permissions",
+    )
+    group = models.ForeignKey(
+        "auth.Group",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="page_permissions",
+    )  # Using Django's built in Group model
+    permission_level = models.CharField(max_length=20, choices=PermissionLevel.choices)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=Q(user__isnull=False) | Q(group__isnull=False),
+                name="user_or_group_must_be_set",
+            ),
+            models.UniqueConstraint(
+                fields=["page", "user"],
+                condition=Q(user__isnull=False),
+                name="unique_user_page_permission",
+            ),
+            models.UniqueConstraint(
+                fields=["page", "group"],
+                condition=Q(group__isnull=False),
+                name="unique_group_page_permission",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.user or self.group} has {self.permission_level} access to {self.page.title}"
