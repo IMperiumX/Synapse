@@ -1,8 +1,9 @@
-from django.db import models
 from django.conf import settings
-from django.utils.text import slugify
+from django.db import models
 from django.db.models import Q
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+from tinymce.models import HTMLField
 
 
 class Page(models.Model):
@@ -16,7 +17,7 @@ class Page(models.Model):
         related_name="pages",
     )
     title = models.CharField(max_length=255)
-    content = models.TextField(blank=True)  # Markdown content
+    content = HTMLField()  # Markdown content
     slug = models.SlugField(
         max_length=255, blank=True
     )  # URL-friendly version of the title
