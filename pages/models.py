@@ -80,6 +80,31 @@ class PageVersion(models.Model):
         return f"{self.page.title} - Version {self.version_number}"
 
 
+class Attachment(models.Model):
+    """
+    Represents a file attached to a page.
+    """
+
+    page = models.ForeignKey(
+        "pages.Page",
+        on_delete=models.CASCADE,
+        related_name="attachments",
+    )
+    file = models.FileField(
+        upload_to="attachments/"
+    )  # TODO: Consider using a cloud storage solution
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="attachments",
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Attachment for {self.page}"
+
+
 class PagePermission(models.Model):
     """
     Defines who has access to a specific page and what they can do.
@@ -108,7 +133,7 @@ class PagePermission(models.Model):
         null=True,
         blank=True,
         related_name="page_permissions",
-    )  # Using Django's built in Group model
+    )
     permission_level = models.CharField(max_length=20, choices=PermissionLevel.choices)
 
     class Meta:

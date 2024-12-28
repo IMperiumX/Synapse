@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "knowledgebases",
     "spaces",
     "pages",
+    "realtime",
 ]
 
 MIDDLEWARE = [
