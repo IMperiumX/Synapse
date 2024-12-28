@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     "spaces",
     "pages",
     "realtime",
+    # Third party
+    "django_extensions",
+    "tinymce",
 ]
 
 MIDDLEWARE = [
