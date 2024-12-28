@@ -88,7 +88,9 @@ ROOT_URLCONF = "synapse.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
+        "DIRS": [str(BASE_DIR / "templates")],
+        # https://docs.djangoproject.com/en/dev/ref/settings/#app-dirs
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -169,15 +171,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
-    ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
 }
 SPECTACULAR_SETTINGS = {
     "TITLE": " Synapse API",
     "DESCRIPTION": "Real-time Collaborative Knowledge Base",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
-    # OTHER SETTINGS
 }
