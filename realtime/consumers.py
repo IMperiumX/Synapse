@@ -2,6 +2,8 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from pages.models import Page
 from .ot.operations import Insert, Delete
+# import asyncio
+import websockets
 
 
 class PageEditConsumer(AsyncWebsocketConsumer):
@@ -68,3 +70,32 @@ class PageEditConsumer(AsyncWebsocketConsumer):
                     }
                 )
             )
+
+    # Client-side code to consume the WebSocket
+    async def consume():
+        uri = "ws://localhost:8000/ws/page/<page_id>/"
+        async with websockets.connect(uri) as websocket:
+            # Receive initial page content
+            initial_content = await websocket.recv()
+            print(f"Initial content: {initial_content}")
+
+            # Send an insert operation
+            insert_operation = json.dumps(
+                {"type": "insert", "text": "Hello, World!", "pos": 0}
+            )
+            await websocket.send(insert_operation)
+
+            # Receive the broadcasted operation
+            response = await websocket.recv()
+            print(f"Received: {response}")
+
+            # Send a delete operation
+            delete_operation = json.dumps({"type": "delete", "length": 5, "pos": 0})
+            await websocket.send(delete_operation)
+
+            # Receive the broadcasted operation
+            response = await websocket.recv()
+            print(f"Received: {response}")
+
+    # # Run the consume function
+    # asyncio.get_event_loop().run_until_complete(consume())
