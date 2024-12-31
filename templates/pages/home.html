@@ -1,1 +1,57 @@
-<h2>Home Page</h2>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Page Edit</title>
+</head>
+
+<body>
+    <textarea id="page-content" cols="100" rows="20"></textarea><br>
+    <input id="page-edit-input" type="text" size="100"><br>
+    <input id="page-edit-submit" type="button" value="Save">
+    {{ page_id|json_script:"page-id" }}
+    <script>
+        const pageID = JSON.parse(document.getElementById('page-id').textContent);
+
+        const pageSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/page/'
+            + '1' // TODO: replace with page id
+            + '/'
+            + 'edit'
+            + '/'
+        );
+
+        pageSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#page-content').value += (data.content + '\n');
+        };
+
+        pageSocket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#page-edit-input').focus();
+        document.querySelector('#page-edit-input').onkeyup = function (e) {
+            if (e.key === 'Enter') {  // enter, return
+                document.querySelector('#page-edit-submit').click();
+            }
+        };
+
+        document.querySelector('#page-edit-submit').onclick = function (e) {
+            const messageInputDom = document.querySelector('#page-edit-input');
+            const message = messageInputDom.value;
+            pageSocket.send(JSON.stringify({
+                'text': message,
+                "type": "insert",
+                "length": message.length,
+                "pos": 0, // always append to the end
+            }));
+            messageInputDom.value = '';
+        };
+    </script>
+</body>
+
+</html>
